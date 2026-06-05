@@ -2,23 +2,42 @@
 
 status=true
 
-python3 -c "
-import numpy as np
-np.random.seed(42)
+python3 -c '
+import random
+
+random.seed(42)
 n = 5
-A = np.random.rand(n, n) + np.eye(n) * n
-x_true = np.random.rand(n)
-B = A @ x_true
-AB = np.column_stack((A, B))
 
-with open('test_in.csv', 'w') as f:
-    f.write(','.join(['A']*n + ['B']) + '\n')
-    np.savetxt(f, AB, delimiter=',', fmt='%.12f')
+A = []
+for i in range(n):
+    row = []
+    for j in range(n):
+        val = random.random()
+        if i == j:
+            val += n
+        row.append(val)
+    A.append(row)
 
-with open('test_expected.csv', 'w') as f:
-    f.write('A,B\n')
-    np.savetxt(f, np.column_stack([x_true]), delimiter=',', fmt='%.6f')
-"
+x_true = [random.random() for _ in range(n)]
+
+B = []
+for i in range(n):
+    s = 0.0
+    for j in range(n):
+        s += A[i][j] * x_true[j]
+    B.append(s)
+
+with open("test_in.csv", "w") as f:
+    f.write(",".join(["A"]*n + ["B"]) + "\n")
+    for i in range(n):
+        row_vals = A[i] + [B[i]]
+        f.write(",".join(f"{v:.12f}" for v in row_vals) + "\n")
+
+with open("test_expected.csv", "w") as f:
+    f.write("A,B\n")
+    for x in x_true:
+        f.write(f"{x:.6f}\n")
+'
 
 ./gauss test_in.csv > test_actual.csv
 
